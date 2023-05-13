@@ -20,13 +20,69 @@ import cv2
 import os
 import numpy as np
 
-def replaceFace(inputPath, outputPath, icon):
+class FaceDetector:
+  def __init__(self):
+    print("setup")
+
+  def detectFace(self, image):
+    faces = [] # [x,y,width,height]
+    return faces
+
+  def getEnsureDetectionResult(self, left, top, bbox_width, bbox_height, width, height):
+    if left<0:
+      left=0
+    if left>width:
+      left=width
+    if top<0:
+      top=0
+    if top>height:
+      top=height
+    if (left+bbox_width)>width:
+      bbox_width = width - left
+    if (top+bbox_height)>height:
+      bbox_height = height - top
+
+    return [left, top, bbox_width, bbox_height]
+
+  def resizeImage(self, image, minWidth=1080, minHeight=1080, maxWidth=1920, maxHeight=1080):
+    result = image
+
+    height, width = image.shape[:2]
+    targetWidth=None
+    targetHeight=None
+
+    if width<minWidth and height<maxWidth:
+      targetWidth = minWidth
+      targetHeight = maxWidth
+    elif width>height:
+      if width>maxWidth:
+        targetWidth=maxWidth
+        targetHeight=maxWidth*height/width
+      elif height>maxHeight:
+        targetHeight=maxHeight
+        targetWidth=maxHeight*width/height
+
+    if targetWidth and targetHeight:
+      result = cv2.resize(image, (targetWidth, targetHeight))
+
+    return image
+
+class HaarsFaceDetector(FaceDetector):
+  def __init__(self):
+    self.detector = cv2.CascadeClassifier("haarcascade_frontalface_default.xml")
+
+  def detectFace(self, image):
+    faces = self.detector.detectMultiScale( image, scaleFactor=1.3, minNeighbors=5 )
+    return faces
+
+
+def replaceFace(detector, inputPath, outputPath, icon):
   image = cv2.imread(inputPath)
 
-  detector = cv2.CascadeClassifier("haarcascade_frontalface_default.xml")
-  faces = detector.detectMultiScale( image, 1.3, 5 )
+  faces = detector.detectFace(image)
 
   for (x, y, w, h) in faces:
+    #print("x="+str(x)+",y="+str(y)+",w="+str(w)+",h="+str(h))
     resizedIcon = cv2.resize(icon, (w, h))
     alpha = resizedIcon[:, :, 3] / 255.0
     foreground = resizedIcon[:, :, :3]
@@ -49,6 +105,7 @@ if __name__ == "__main__":
   args = parser.parse_args()
 
   icon = cv2.imread(args.icon, cv2.IMREAD_UNCHANGED)
+  detector = HaarsFaceDetector()
 
   files = []
   for file in os.listdir(args.input):
@@ -56,4 +113,4 @@ if __name__ == "__main__":
       files.append(file)
 
   for file in files:
-    replaceFace( os.path.join(args.input, file), os.path.join(args.output, file), icon )
+    replaceFace( detector, os.path.join(args.input, file), os.path.join(args.output, file), icon )
