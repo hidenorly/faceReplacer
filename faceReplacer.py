@@ -76,6 +76,34 @@ class HaarsFaceDetector(FaceDetector):
     return faces
 
 
+class SsdFaceDetector(FaceDetector):
+  PROTOTXT_PATH = "deploy.prototxt"
+  MODEL_PATH = "res10_300x300_ssd_iter_140000.caffemodel"
+  CONF_THRESHOLD = 0.8  # 信頼度の閾値
+
+  def __init__(self):
+    self.net = cv2.dnn.readNetFromCaffe(self.PROTOTXT_PATH, self.MODEL_PATH)
+
+  def detectFace(self, image):
+    faces = []
+    blob = cv2.dnn.blobFromImage(cv2.resize(image, (300, 300)), 1.0, (300, 300), (104.0, 177.0, 123.0))
+    self.net.setInput(blob)
+    detections = self.net.forward()
+
+    height, width = image.shape[:2]
+
+    for i in range(detections.shape[2]):
+        confidence = detections[0, 0, i, 2]
+
+        if confidence > self.CONF_THRESHOLD:
+            bbox = detections[0, 0, i, 3:7] * np.array([width, height, width, height])
+            left, top, right, bottom = bbox.astype(int)
+
+            faces.append( self.getEnsureDetectionResult(left, top, right, bottom, width, height) )
+
+    return faces
+
+
 def replaceFace(detector, inputPath, outputPath, icon):
   image = cv2.imread(inputPath)
 
