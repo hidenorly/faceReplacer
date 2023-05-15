@@ -104,6 +104,43 @@ class SsdFaceDetector(FaceDetector):
     return faces
 
 
+class YoloFaceDetector(FaceDetector):
+  MODEL_PATH = "yolov3.weights"
+  CONFIG_PATH = "../darknet/cfg/yolov3.cfg"
+  CONF_THRESHOLD = 0.8  # 信頼度の閾値
+
+  def __init__(self):
+    self.net = cv2.dnn.readNetFromDarknet(self.CONFIG_PATH, self.MODEL_PATH)
+
+  def detectFace(self, image):
+    faces = []
+
+    blob = cv2.dnn.blobFromImage(image, 1/255.0, (416, 416), swapRB=True, crop=False)
+    self.net.setInput(blob)
+    output_layers = self.net.getUnconnectedOutLayersNames()
+    layer_outputs = self.net.forward(output_layers)
+
+    height, width = image.shape[:2]
+
+    for output in layer_outputs:
+        for detection in output:
+            scores = detection[5:]
+            class_id = np.argmax(scores)
+            confidence = scores[class_id]
+
+            if confidence > self.CONF_THRESHOLD and class_id == 0:  # class_id==0 means face
+                center_x = int(detection[0] * width)
+                center_y = int(detection[1] * height)
+                bbox_width = int(detection[2] * width)
+                bbox_height = int(detection[3] * height)
+                left = int(center_x - bbox_width / 2)
+                top = int(center_y - bbox_height / 2)
+
+                faces.append( self.getEnsureDetectionResult(left, top, bbox_width, bbox_height, width, height) )
+
+    return faces
+
+
 def replaceFace(detector, inputPath, outputPath, icon):
   image = cv2.imread(inputPath)
 
