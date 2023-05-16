@@ -19,6 +19,7 @@ import argparse
 import cv2
 import os
 import numpy as np
+import face_detection
 
 class FaceDetector:
   def __init__(self):
@@ -141,6 +142,28 @@ class YoloFaceDetector(FaceDetector):
     return faces
 
 
+class RetinaFaceDetector(FaceDetector):
+  MODEL = "RetinaNetResNet50"
+  NMS_IOU_THRESHOLD = 0.3
+  CONF_THRESHOLD = 0.1  # 信頼度の閾値
+
+  def __init__(self):
+    self.net = face_detection.build_detector(self.MODEL, confidence_threshold=self.CONF_THRESHOLD, nms_iou_threshold=self.NMS_IOU_THRESHOLD)
+
+  def detectFace(self, image):
+    faces = []
+
+    inputImage = self.resizeImage(image, 128, 128, 1920, 1080)
+    height, width = inputImage.shape[:2]
+
+    detections = self.net.detect(inputImage)
+    for detection in detections:
+        x, y, w, h = detection[:4]
+        faces.append( self.getEnsureDetectionResult( x, y, w, h, width, height) )
+
+    return faces
+
+
 def replaceFace(detector, inputPath, outputPath, icon):
   image = cv2.imread(inputPath)
 
@@ -170,7 +193,7 @@ if __name__ == "__main__":
   args = parser.parse_args()
 
   icon = cv2.imread(args.icon, cv2.IMREAD_UNCHANGED)
-  detector = HaarsFaceDetector()
+  detector = RetinaFaceDetector() #SsdFaceDetector() #HaarsFaceDetector() #YoloFaceDetector()
 
   files = []
   for file in os.listdir(args.input):
