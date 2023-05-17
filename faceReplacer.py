@@ -20,6 +20,7 @@ import cv2
 import os
 import numpy as np
 import face_detection
+from mtcnn import MTCNN
 
 class FaceDetector:
   def __init__(self):
@@ -163,6 +164,22 @@ class RetinaFaceDetector(FaceDetector):
 
     return faces
 
+
+class MtCnnFaceDetector(FaceDetector):
+  def __init__(self):
+    self.detector = detector = MTCNN()
+
+  def detectFace(self, image):
+    faces = []
+
+    height, width = image.shape[:2]
+    results = self.detector.detect_faces(image)
+
+    for result in results:
+        x, y, w, h = result['box']
+        faces.append( self.getEnsureDetectionResult( x, y, w, h, width, height) )
+
+    return faces
 
 def replaceFace(detector, inputPath, outputPath, icon):
   image = cv2.imread(inputPath)
