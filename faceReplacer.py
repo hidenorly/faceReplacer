@@ -206,11 +206,23 @@ if __name__ == "__main__":
   parser = argparse.ArgumentParser()
   parser.add_argument("-i", "--input", help="Specify input path")
   parser.add_argument("-o", "--output", help="Specify output path")
-  parser.add_argument("-f", "--icon", help="Specift replace icon image")
+  parser.add_argument("-f", "--icon", help="Specify replace icon image")
+  parser.add_argument("-d", "--detector", default="haars", help="Specify detector. haars or ssd or yolo or retina or mtcnn")
   args = parser.parse_args()
 
   icon = cv2.imread(args.icon, cv2.IMREAD_UNCHANGED)
-  detector = RetinaFaceDetector() #SsdFaceDetector() #HaarsFaceDetector() #YoloFaceDetector()
+
+  detector = HaarsFaceDetector
+  if args.detector == "ssd":
+    detector = SsdFaceDetector
+  elif args.detector == "yolo":
+    detector = YoloFaceDetector
+  elif args.detector == "retina":
+    detector = RetinaFaceDetector
+  elif args.detector == "mtcnn":
+    detector = MtCnnFaceDetector
+
+  detector = detector()
 
   files = []
   for file in os.listdir(args.input):
