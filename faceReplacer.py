@@ -181,6 +181,23 @@ class MtCnnFaceDetector(FaceDetector):
 
     return faces
 
+
+class GfxUtil:
+  def bitbltWithAlpha(dstImage, srcImage, x, y):
+    height, width = srcImage.shape[:2]
+    alpha = srcImage[:, :, 3] / 255.0
+    foreground = srcImage[:, :, :3]
+
+    srcRegion = alpha[:, :, np.newaxis] * foreground
+    bgRegion = (1 - alpha[:, :, np.newaxis]) * dstImage[y:y + height, x:x + width]
+
+    blended = (srcRegion + bgRegion).astype(np.uint8)
+
+    dstImage[y:y + height, x:x + width] = blended
+
+    return dstImage
+
+
 def replaceFace(detector, inputPath, outputPath, icon):
   image = cv2.imread(inputPath)
 
@@ -189,15 +206,7 @@ def replaceFace(detector, inputPath, outputPath, icon):
   for (x, y, w, h) in faces:
     #print("x="+str(x)+",y="+str(y)+",w="+str(w)+",h="+str(h))
     resizedIcon = cv2.resize(icon, (w, h))
-    alpha = resizedIcon[:, :, 3] / 255.0
-    foreground = resizedIcon[:, :, :3]
-
-    iconRegion = alpha[:, :, np.newaxis] * foreground
-    bgRegion = (1 - alpha[:, :, np.newaxis]) * image[y:y + h, x:x + w]
-
-    blended = (iconRegion + bgRegion).astype(np.uint8)
-
-    image[y:y + h, x:x + w] = blended
+    GfxUtil.bitbltWithAlpha(image, resizedIcon, x, y)
 
   cv2.imwrite(outputPath, image)
 
