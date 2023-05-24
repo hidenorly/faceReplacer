@@ -65,7 +65,7 @@ class FaceDetector:
         targetWidth=maxHeight*width/height
 
     if targetWidth and targetHeight:
-      result = cv2.resize(image, (targetWidth, targetHeight))
+      result = GfxUtil.resizeImage( image, targetWidth, targetHeight )
 
     return image
 
@@ -196,6 +196,16 @@ class GfxUtil:
     dstImage[y:y + height, x:x + width] = blended
 
     return dstImage
+
+  def resizeImage(image, targetWidth, targetHeight):
+    result = image
+
+    height, width = image.shape[:2]
+    if targetWidth!=width and targetHeight!=height:
+      result = cv2.resize(image, (targetWidth, targetHeight))
+
+    return image
+
 
 
 def replaceFace(detector, inputPath, outputPath, icon):
