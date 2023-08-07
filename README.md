@@ -9,8 +9,8 @@ pip install numpy opencv-python
 ## setup for RetinaFace and mtcnn
 
 ```
-pip3 install face-detection torch torchvision numpy opencv-python
-pip3 install mtcnn
+pip install face-detection torch torchvision numpy opencv-python
+pip install mtcnn tensorflow
 ```
 
 ## setup for haarcascade
@@ -26,3 +26,20 @@ https://github.com/keyurr2/face-detection/blob/master/deploy.prototxt.txt
 
 git clone https://github.com/pjreddie/darknet.git
 wget https://pjreddie.com/media/files/yolov3.weights
+
+
+## help
+
+```
+usage: faceReplacer.py [-h] [-i INPUT] [-o OUTPUT] [-f ICON] [-d DETECTOR]
+
+options:
+  -h, --help            show this help message and exit
+  -i INPUT, --input INPUT
+                        Specify input path
+  -o OUTPUT, --output OUTPUT
+                        Specify output path
+  -f ICON, --icon ICON  Specify replace icon image
+  -d DETECTOR, --detector DETECTOR
+                        Specify detector. haars or ssd or yolo or retina or mtcnn
+```
