@@ -43,3 +43,12 @@ options:
   -d DETECTOR, --detector DETECTOR
                         Specify detector. haars or ssd or yolo or retina or mtcnn
 ```
+
+
+```
+$ mkdir input
+$ mkdir tmp
+$ cp target.jpg input/
+$ python3 faceReplacer.py -i input -o tmp -f replaceIcon.png
+```
+
